@@ -36,7 +36,7 @@
       });
       location.reload();
     })
-
+//
     fetch("/api/me")
       .then((response) => response.json())
       .then((mahasiswa) => (nama.textContent = mahasiswa.nama));
