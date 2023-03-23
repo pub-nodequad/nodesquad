@@ -1,46 +1,65 @@
 <!DOCTYPE html>
 <html lang="id">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>NodeSquad</title>
-    <link rel="stylesheet" href="/assets/style.css" />
-  </head>
-  <body>
-    <h1>Selamat datang <span></span>!</h1>
-    <table>
-      <thead>
-        <th>NIM</th>
-        <th>Nama</th>
-      </thead>
-      <tbody></tbody>
-    </table>
-    <script>
-      const nama = document.querySelector("span");
 
-      fetch("/api/me")
-        .then((response) => response.json())
-        .then((mahasiswa) => (nama.textContent = mahasiswa.nama));
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NodeSquad</title>
+  <link rel="stylesheet" href="/assets/style.css" />
+</head>
 
-      fetch("/api/mahasiswa")
-        .then((response) => response.json())
-        .then((mahasiswa) => {
-          const tbody = document.querySelector("tbody");
-          mahasiswa.forEach((m) => {
-            const tr = document.createElement("tr");
+<body>
+  <h1>Selamat datang <span></span>!</h1>
+  <table>
+    <thead>
+      <th>NIM</th>
+      <th>Nama</th>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <button>log out</button>
+  <script>
+    const nama = document.querySelector("span");
+    const tamp = document.querySelector("button");
+    tamp.addEventListener("click", async () => {
+      // e.preventDefault();
+      alert("ok");
+      await fetch("/api/logout", {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+        body: JSON.stringify({
+          token: "token"
+        })
+      });
+      location.reload();
+    })
 
-            const tdNim = document.createElement("td");
-            tdNim.textContent = m.nim;
-            tr.appendChild(tdNim);
+    fetch("/api/me")
+      .then((response) => response.json())
+      .then((mahasiswa) => (nama.textContent = mahasiswa.nama));
 
-            const tdNama = document.createElement("td");
-            tdNama.textContent = m.nama;
-            tr.appendChild(tdNama);
+    fetch("/api/mahasiswa")
+      .then((response) => response.json())
+      .then((mahasiswa) => {
+        const tbody = document.querySelector("tbody");
+        mahasiswa.forEach((m) => {
+          const tr = document.createElement("tr");
 
-            tbody.appendChild(tr);
-          });
+          const tdNim = document.createElement("td");
+          tdNim.textContent = m.nim;
+          tr.appendChild(tdNim);
+
+          const tdNama = document.createElement("td");
+          tdNama.textContent = m.nama;
+          tr.appendChild(tdNama);
+
+          tbody.appendChild(tr);
         });
-    </script>
-  </body>
+      });
+  </script>
+</body>
+
 </html>
