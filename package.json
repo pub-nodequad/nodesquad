@@ -2,9 +2,9 @@
   "name": "nodesquad",
   "version": "1.0.0",
   "description": "Project pelatihan Node.js Squad",
-  "main": "api/index.js",
+  "main": "index.js",
   "scripts": {
-    "dev": "nodemon api"
+    "dev": "node --watch ."
   },
   "keywords": [
     "express",
@@ -20,9 +20,6 @@
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.0",
     "pg": "^8.10.0"
-  },
-  "devDependencies": {
-    "typescript": "^5.0.2"
   },
   "type": "module"
 }

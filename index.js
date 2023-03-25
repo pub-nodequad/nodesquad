@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import express from "express";
+
 import { client } from "./db.js";
 
 import jwt from "jsonwebtoken";
@@ -12,10 +13,10 @@ const app = express();
 
 // MIDDLEWARE
 
-// untuk mengelola cookie
+// Untuk mengelola cookie
 app.use(cookieParser());
 
-// untuk memeriksa otorisasi
+// Untuk memeriksa otorisasi
 app.use((req, res, next) => {
   if (req.path.startsWith("/api/login") || req.path.startsWith("/assets")) {
     next();
@@ -50,15 +51,20 @@ app.use((req, res, next) => {
   }
 });
 
-// untuk mengakses file statis
-app.use(express.static("public"));
+// Untuk mengakses file statis
+// app.use(express.static("public"));
 
-// untuk membaca body berformat JSON
+// Untuk mengakses file statis (Vercel)
+import path from "path";
+const __dirname = path.dirname(new URL(import.meta.url).pathname);
+app.use(express.static(path.resolve(__dirname, "public")));
+
+// Untuk membaca body berformat JSON
 app.use(express.json());
 
 // ROUTE OTORISASI
 
-// login (dapatkan token)
+// Login (dapatkan token)
 app.post("/api/login", async (req, res) => {
   const results = await client.query(
     `SELECT * FROM mahasiswa WHERE nim = '${req.body.nim}'`
@@ -78,13 +84,13 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-// dapatkan mahasiswa saat ini (yang sedang login)
+// Dapatkan mahasiswa saat ini (yang sedang login)
 app.get("/api/me", (req, res) => {
   const me = jwt.verify(req.cookies.token, process.env.SECRET_KEY);
   res.json(me);
 });
 
-// logout (hapus token)
+// Logout (hapus token)
 app.get("/api/logout", (_req, res) => {
   res.clearCookie("token");
   res.send("Logout berhasil.");
@@ -92,13 +98,13 @@ app.get("/api/logout", (_req, res) => {
 
 // ROUTE MAHASISWA
 
-// dapatkan semua
+// Dapatkan semua
 app.get("/api/mahasiswa", async (_req, res) => {
   const results = await client.query("SELECT * FROM mahasiswa ORDER BY id");
   res.json(results.rows);
 });
 
-// dapatkan satu
+// Dapatkan satu
 app.get("/api/mahasiswa/:id", async (req, res) => {
   const results = await client.query(
     `SELECT * FROM mahasiswa WHERE id = ${req.params.id}`
@@ -106,7 +112,7 @@ app.get("/api/mahasiswa/:id", async (req, res) => {
   res.json(results.rows[0]);
 });
 
-// tambah
+// Tambah
 app.post("/api/mahasiswa", async (req, res) => {
   const salt = await bcrypt.genSalt();
   const hash = await bcrypt.hash(req.body.password, salt);
@@ -116,7 +122,7 @@ app.post("/api/mahasiswa", async (req, res) => {
   res.send("Mahasiswa berhasil ditambahkan.");
 });
 
-// edit
+// Edit
 app.put("/api/mahasiswa/:id", async (req, res) => {
   await client.query(
     `UPDATE mahasiswa SET nim = '${req.body.nim}', nama = '${req.body.nama}' WHERE id = ${req.params.id}`
@@ -124,7 +130,7 @@ app.put("/api/mahasiswa/:id", async (req, res) => {
   res.send("Mahasiswa berhasil diedit.");
 });
 
-// hapus
+// Hapus
 app.delete("/api/mahasiswa/:id", async (req, res) => {
   await client.query(`DELETE FROM mahasiswa WHERE id = ${req.params.id}`);
   res.send("Mahasiswa berhasil dihapus.");
@@ -132,7 +138,7 @@ app.delete("/api/mahasiswa/:id", async (req, res) => {
 
 // ROUTE PELATIHAN
 
-// dapatkan semua
+// Dapatkan semua
 app.get("/api/pelatihan", async (_req, res) => {
   const results = await client.query("SELECT * FROM pelatihan");
   res.json(results.rows);
