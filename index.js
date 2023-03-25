@@ -27,6 +27,7 @@ app.use((req, res, next) => {
         jwt.verify(req.cookies.token, process.env.SECRET_KEY);
         authorized = true;
       } catch (err) {
+        res.setHeader("Cache-Control", "no-store"); // khusus Vercel
         res.clearCookie("token");
       }
     }
@@ -54,7 +55,7 @@ app.use((req, res, next) => {
 // Untuk mengakses file statis
 // app.use(express.static("public"));
 
-// Untuk mengakses file statis (Vercel)
+// Untuk mengakses file statis (khusus Vercel)
 import path from "path";
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 app.use(express.static(path.resolve(__dirname, "public")));
@@ -92,6 +93,7 @@ app.get("/api/me", (req, res) => {
 
 // Logout (hapus token)
 app.get("/api/logout", (_req, res) => {
+  res.setHeader("Cache-Control", "no-store"); // khusus Vercel
   res.clearCookie("token");
   res.send("Logout berhasil.");
 });
