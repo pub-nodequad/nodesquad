@@ -12,14 +12,8 @@ const app = express();
 
 // MIDDLEWARE
 
-// untuk membaca body berformat JSON
-app.use(express.json());
-
 // untuk mengelola cookie
 app.use(cookieParser());
-
-// untuk mengakses file statis
-app.use(express.static("public"));
 
 // untuk memeriksa otorisasi
 app.use((req, res, next) => {
@@ -55,6 +49,12 @@ app.use((req, res, next) => {
     }
   }
 });
+
+// untuk mengakses file statis
+app.use(express.static("public"));
+
+// untuk membaca body berformat JSON
+app.use(express.json());
 
 // ROUTE OTORISASI
 
