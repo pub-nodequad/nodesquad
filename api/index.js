@@ -10,18 +10,32 @@ import bcrypt from "bcryptjs";
 
 const app = express();
 
-// middleware untuk membaca body berformat JSON
+// MIDDLEWARE
+
+// untuk membaca body berformat JSON
 app.use(express.json());
 
-// middleware untuk mengelola cookie
+// untuk mengelola cookie
 app.use(cookieParser());
 
-// middleware untuk mengalihkan ke halaman login
+// untuk mengakses file statis
+app.use(express.static("public"));
+
+// untuk memeriksa otorisasi
 app.use((req, res, next) => {
-  if (req.path.startsWith("/assets") || req.path.startsWith("/api")) {
+  if (req.path.startsWith("/api/login") || req.path.startsWith("/assets")) {
     next();
   } else {
+    let authorized = false;
     if (req.cookies.token) {
+      try {
+        jwt.verify(req.cookies.token, process.env.SECRET_KEY);
+        authorized = true;
+      } catch (err) {
+        res.clearCookie("token");
+      }
+    }
+    if (authorized) {
       if (req.path.startsWith("/login")) {
         res.redirect("/");
       } else {
@@ -31,18 +45,20 @@ app.use((req, res, next) => {
       if (req.path.startsWith("/login")) {
         next();
       } else {
-        res.redirect("/login");
+        if (req.path.startsWith("/api")) {
+          res.status(401);
+          res.send("Anda harus login terlebih dahulu.");
+        } else {
+          res.redirect("/login");
+        }
       }
     }
   }
 });
 
-// middleware untuk mengakses file statis
-app.use(express.static("public"));
+// ROUTE OTORISASI
 
-// ROUTE TANPA TOKEN
-
-// dapatkan token
+// login (dapatkan token)
 app.post("/api/login", async (req, res) => {
   const results = await client.query(
     `SELECT * FROM mahasiswa WHERE nim = '${req.body.nim}'`
@@ -62,37 +78,27 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-// middleware untuk mengotentikasi pengguna
-app.use((req, res, next) => {
-  if (req.cookies.token) {
-    try {
-      jwt.verify(req.cookies.token, process.env.SECRET_KEY);
-      next();
-    } catch (err) {
-      res.status(401);
-      res.send("Anda harus login lagi.");
-    }
-  } else {
-    res.status(401);
-    res.send("Anda harus login terlebih dahulu.");
-  }
-});
-
-// dapatkan mahasiswa yang login
+// dapatkan mahasiswa saat ini (yang sedang login)
 app.get("/api/me", (req, res) => {
   const me = jwt.verify(req.cookies.token, process.env.SECRET_KEY);
   res.json(me);
 });
 
+// logout (hapus token)
+app.get("/api/logout", (_req, res) => {
+  res.clearCookie("token");
+  res.send("Logout berhasil.");
+});
+
 // ROUTE MAHASISWA
 
-// tampilkan semua
+// dapatkan semua
 app.get("/api/mahasiswa", async (_req, res) => {
   const results = await client.query("SELECT * FROM mahasiswa ORDER BY id");
   res.json(results.rows);
 });
 
-// tampilkan satu
+// dapatkan satu
 app.get("/api/mahasiswa/:id", async (req, res) => {
   const results = await client.query(
     `SELECT * FROM mahasiswa WHERE id = ${req.params.id}`
@@ -126,10 +132,13 @@ app.delete("/api/mahasiswa/:id", async (req, res) => {
 
 // ROUTE PELATIHAN
 
+// dapatkan semua
 app.get("/api/pelatihan", async (_req, res) => {
   const results = await client.query("SELECT * FROM pelatihan");
   res.json(results.rows);
 });
+
+// MEMULAI SERVER
 
 app.listen(3000, () => {
   console.log("Server berhasil berjalan.");
