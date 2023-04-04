@@ -18,7 +18,7 @@ app.use(cookieParser());
 
 // Untuk memeriksa otorisasi
 app.use((req, res, next) => {
-  if (req.path.startsWith("/api/login") || req.path.startsWith("/assets")) {
+  if (req.path === "/api/login" || req.path.startsWith("/assets")) {
     next();
   } else {
     let authorized = false;
@@ -57,8 +57,10 @@ app.use((req, res, next) => {
 
 // Untuk mengakses file statis (khusus Vercel)
 import path from "path";
-const __dirname = path.dirname(new URL(import.meta.url).pathname);
-app.use(express.static(path.resolve(__dirname, "public")));
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+app.use(express.static(path.join(__dirname, "public")));
 
 // Untuk membaca body berformat JSON
 app.use(express.json());
